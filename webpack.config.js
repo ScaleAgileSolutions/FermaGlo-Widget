@@ -1,6 +1,7 @@
 // Import required dependencies
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 // Webpack configuration object
 module.exports = {
@@ -44,6 +45,22 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       template: './public/index.html',  // HTML template for development
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: 'public/Asset',
+          to: 'Asset'
+        },
+        {
+          from: 'public/Jazz.mp3',
+          to: 'Jazz.mp3'
+        },
+        {
+          from: 'public/widget',
+          to: 'widget'
+        }
+      ]
     }),
   ],
   
