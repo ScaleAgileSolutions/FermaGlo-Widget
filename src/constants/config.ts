@@ -1,7 +1,7 @@
 import { allowedOrigins } from './allowedOrigins';
 const scriptTag = document.currentScript as HTMLScriptElement | null;
 
-let tk = scriptTag?.getAttribute("tk")
+let tk = scriptTag?.getAttribute("tk") || 'MVINbTAdbz86JcLYi62TuIHGv6AdHvQcbVQSCDRcs877vu6F2sGUrBUZJjg19Do4YWvbzIaH6ZGZ4rakJzdyeGc9PQ..'
 // Custom Base64 obfuscator
 
 // Function to fetch widget configuration

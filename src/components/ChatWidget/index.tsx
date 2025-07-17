@@ -227,7 +227,7 @@ function ChatWidget() {
                         {/* Microphone Icon */}
                         {callState === 'active' ? (
                             <img 
-                                src="/Asset/active_call.png"
+                                src="https://vocodia-maxoderm-multi-widget.pages.dev/Asset/active_call.png"
                                 alt="Active Microphone"
                                 width="59" 
                                 height="59" 
@@ -240,7 +240,7 @@ function ChatWidget() {
                             />
                         ) : callState === 'offline' ? (
                             <img 
-                                src="/Asset/mute_call.png"
+                                src="https://vocodia-maxoderm-multi-widget.pages.dev/Asset/mute_call.png"
                                 alt="Offline Microphone"
                                 width="59" 
                                 height="59" 
@@ -248,7 +248,7 @@ function ChatWidget() {
                             />
                         ) : (
                             <img 
-                                src="/Asset/inactive_call.png"
+                                src="https://vocodia-maxoderm-multi-widget.pages.dev/Asset/inactive_call.png"
                                 alt="Available Microphone"
                                 width="59" 
                                 height="59" 
