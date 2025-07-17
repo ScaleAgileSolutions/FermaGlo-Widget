@@ -13,11 +13,11 @@ const fetchWidgetConfig = async () => {
         'x-widget-token': tk
       }
     });
-    console.log(response);
+    // console.log(response);
     if (!response.ok) {
       throw new Error('Failed to fetch widget configuration');
     }
-    console.log(response,'response.data')
+    // console.log(response,'response.data')
     return await response.json();
   
   } catch (error) {

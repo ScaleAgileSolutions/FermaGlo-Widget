@@ -34,6 +34,7 @@ if (typeof window !== 'undefined') {
             await initializeWidgetConfig();
             let data = getWidgetConfig().domains.includes(window.location.origin)
             if(data){
+                console.log('Initializing chat widget... Third step');
                 await initializeChatWidget();
             }
         }catch(err){

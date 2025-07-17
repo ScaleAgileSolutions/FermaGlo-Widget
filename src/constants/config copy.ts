@@ -16,11 +16,11 @@ const allowedOrigins = [
 
 const widgetConfig = {
     sourceId:scriptTag?.getAttribute("data-source-id") || generateSourceIdFromURL(),
-    agentId: scriptTag?.getAttribute("data-agent-id") || "agent_ea74c3c0c2b65da45e9035d281", 
-    transferAgentId: scriptTag?.getAttribute("data-transfer-agent-id") || "agent_d9a52f59264b3fd6e0cb9bc812",
+    agentId: scriptTag?.getAttribute("data-agent-id") || "agent_ce01bdc30264329416220de0f7", 
+    transferAgentId: scriptTag?.getAttribute("data-transfer-agent-id") || "agent_ce01bdc30264329416220de0f7",
     agentName: scriptTag?.getAttribute("data-agent-name") || "Isabella",
     oldAgentName: scriptTag?.getAttribute("data-agent-name") || "Isabella",
-    oldAgentID: scriptTag?.getAttribute("data-agent-id") || "agent_d9a52f59264b3fd6e0cb9bc812",
+    oldAgentID: scriptTag?.getAttribute("data-agent-id") || "agent_ce01bdc30264329416220de0f7",
     transferAgentName: scriptTag?.getAttribute("data-transfer-agent-name") || "Noah",
     apiKey:'1b07e2d1-c19f-44de-a638-303e755e1477',
     textOne:'Speak With',
