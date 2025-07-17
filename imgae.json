@@ -1,0 +1,72 @@
+{
+  "widgetType": "ai_assistant_call_to_action",
+  "elements": {
+    "microphoneButton": {
+      "icon": "microphone",
+      "style": {
+        "shape": "circle",
+        "gradient": {
+          "from": "#d7c3b4",
+          "to": "#bfa897"
+        },
+        "iconColor": "#ffffff",
+        "backgroundColor": "#d7c3b4"
+      },
+      "position": "left",
+      "action": "start_voice_interaction"
+    },
+    "textLabel": {
+      "primaryText": "TALK TO OUR",
+      "secondaryText": "AI ASSISTANT",
+      "style": {
+        "fontWeight": "bold",
+        "fontSize": "small",
+        "textTransform": "uppercase",
+        "color": "#1e9887"
+      },
+      "alignment": "vertical_stack",
+      "position": "center"
+    },
+    "agentStatus": {
+      "label": "AGENT STATUS:",
+      "value": "AVAILABLE",
+      "style": {
+        "labelColor": "#888888",
+        "valueColor": "#000000",
+        "statusIndicatorColor": "#2ecc71",
+        "indicatorShape": "circle"
+      },
+      "position": "bottom_right"
+    },
+    "container": {
+      "backgroundColor": "#f5f5f5",
+      "borderRadius": "20px",
+      "padding": "8px 12px",
+      "layout": "horizontal_flex"
+    }
+  },
+  "contextualUse": {
+    "intent": "initiate_voice_ai_assistant",
+    "location": "website_footer_or_corner_button",
+    "useCase": "support, guidance, or sales funneling",
+    "audience": "site_visitors_looking_for_help"
+  },
+  "technical": {
+    "fileName": "Screenshot_2025-07-16_at_3.03.35_PM.png",
+    "dimensions": {
+      "width": 326,
+      "height": 115
+    },
+    "imageType": "UI_component",
+    "platform": "web"
+  },
+  "interactionModel": {
+    "microphoneClick": {
+      "triggers": "open_voice_chat_interface"
+    },
+    "statusIndicator": {
+      "colorCode": "#2ecc71",
+      "meaning": "agent_available"
+    }
+  }
+}

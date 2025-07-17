@@ -19,6 +19,7 @@ interface RegisterCallResponse {
 interface ModalWindowProps {
   visible: boolean;
   setVisible: (val: boolean) => void;
+  // microphoneStream?: MediaStream | null;
 }
 
 function ModalWindow(props: ModalWindowProps) {
@@ -52,8 +53,17 @@ function ModalWindow(props: ModalWindowProps) {
     customer_email: ""
   });
 
+  const getSharedMicrophoneStream = () => {
+    return (window as any).retellMicrophoneStream;
+  };
+
+
   // Initialize Retell client
   const retellWebClient = useRef(new RetellWebClient()).current;
+
+  useEffect(() => {
+    (window as any).retellWebClient = retellWebClient;
+  }, [retellWebClient]);
 
   // Hold music management functions
   const playHoldMusic = () => {
@@ -220,6 +230,9 @@ function ModalWindow(props: ModalWindowProps) {
         accessToken: access_token,
         emitRawAudioSamples: true,
         sampleRate: 24000,
+        ...(getSharedMicrophoneStream() && {
+          captureDeviceId: getSharedMicrophoneStream().getAudioTracks()[0]?.getSettings().deviceId || 'default'
+      })
       });
 
       stopHoldMusic();
@@ -454,6 +467,9 @@ function ModalWindow(props: ModalWindowProps) {
               accessToken: res.access_token,
               emitRawAudioSamples: true,
               sampleRate: 24000,
+              ...(getSharedMicrophoneStream() && {
+                captureDeviceId: getSharedMicrophoneStream().getAudioTracks()[0]?.getSettings().deviceId || 'default'
+            })
             });
           } catch (callError) {
             console.error("Failed to start call:", callError);

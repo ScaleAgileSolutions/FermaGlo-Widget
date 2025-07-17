@@ -52,9 +52,15 @@ module.exports = {
   
   // Development server configuration
   devServer: {
-    static: {
-      directory: path.join(__dirname, 'dist'),  // Serve static files from dist directory
-    },
+    static: [
+      {
+        directory: path.join(__dirname, 'dist'),  // Serve static files from dist directory
+      },
+      {
+        directory: path.join(__dirname, 'public'),  // Serve static files from public directory
+        publicPath: '/',  // Serve public files at root path
+      }
+    ],
     headers: {
       'Access-Control-Allow-Origin': '*',  // Enable CORS for all origins
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',  // Allowed HTTP methods

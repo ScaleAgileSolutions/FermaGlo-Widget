@@ -19,13 +19,14 @@ function ChatWidget() {
     // state variable to track if widget button was hovered on
     const [hovered, setHovered] = useState(false);
     // state variable to track modal visibility
-    // const [visible, setVisible] = useState(false);
     const [visible, setVisible] = useState<boolean>(false);
     //creating a ref 'id'
     const widgetRef = useRef(null);
     const [micStatus, setMicStatus] = useState<"active" | "inactive" | "denied" | "checking">("checking");
     const [currentAgentName, setCurrentAgentName] = useState(getWidgetConfig().agentName);   
     const [currentStage, setCurrentStage] = useState('Speak With');
+    const [callState, setCallState] = useState<'inactive' | 'active' | 'offline'>('inactive');
+    const [micStream, setMicStream] = useState<MediaStream | null>(null);
 
     // use effect listener to check if the mouse was cliked outside the window 
     useEffect(() => {
@@ -39,43 +40,18 @@ function ChatWidget() {
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, [widgetRef]);
-    // Callback function to update the parent's state
-
-    // useEffect(() => {
-    //     const checkMic = async () => {
-    //       try {
-    //         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-    //         // Microphone is active
-    //         setMicStatus("active");
-    //         setVisible(true);
-
-    //         // Stop the tracks immediately if you're not using the stream
-    //         stream.getTracks().forEach((track) => track.stop());
-    //       } catch (error) {
-    //         // Microphone is inactive or access denied
-    //         if (error.name === "NotAllowedError" || error.message === "name") {
-    //           setMicStatus("denied");
-    //           setVisible(false);
-    //         } else {
-    //           setMicStatus("inactive");
-    //           setVisible(false);
-    //         }
-    //       }
-    //     };
-
-    //     checkMic();
-    //   }, []);
 
     async function checkMic() {
         if (navigator.mediaDevices && !visible) {
             navigator.mediaDevices
                 .getUserMedia({ audio: true, video: false })
                 .then((stream) => {
+                    setMicStream(stream);
+                     // Make stream available globally for Retell
+                    (window as any).retellMicrophoneStream = stream;
                     setMicStatus("active");
-                    setVisible(!false);
+                    setVisible(true);
                 }).catch((error: any) => {
-
                     if (error.name === "NotAllowedError" || error.name === "PermissionDeniedError") {
                         setMicStatus("denied");
                     } else if (error.name === "NotFoundError" || error.name === "DevicesNotFoundError") {
@@ -87,10 +63,9 @@ function ChatWidget() {
         } else if (visible) {
             setVisible(false);
             setCurrentAgentName(getWidgetConfig().agentName);
-            setCurrentStage('Speak With')
+            setCurrentStage('Speak With');
+            stopMicrophone();
         }
-
-
     }
 
     // 🔁 This function allows you to update agent name and manage transfer behavior
@@ -98,9 +73,8 @@ function ChatWidget() {
         setCurrentAgentName(getWidgetConfig().transferAgentName);
         setCurrentStage('Calling')
         setMicStatus("active");
-        // setVisible(true);
     }
-    // Optional: expose globally if you're triggering from outside the component
+    
     useEffect(() => {
         (window as any).transferToAgent = handleAgentTransfer;
     }, []);
@@ -112,74 +86,289 @@ function ChatWidget() {
         setMicStatus("active");
         setVisible(false);
     }
-    // Optional: expose globally if you're triggering from outside the component
+    
     useEffect(() => {
         (window as any).hengUpAgent = handleAgentHengUp;
     }, []);
 
+    // Function to handle call state changes
+    function handleCallStateChange(state: 'inactive' | 'active' | 'offline') {
+        setCallState(state);
+    }
+    
+    useEffect(() => {
+        (window as any).setCallState = handleCallStateChange;
+        (window as any).muteMicrophone = muteMicrophone;
+        (window as any).unmuteMicrophone = unmuteMicrophone;
+        (window as any).stopMicrophone = stopMicrophone;
+    }, []);
 
-    const getChatText = () => {
-        if (micStatus === "denied") {
-            return {
-                title: `Unable to call`,
-                subtitle: `${currentAgentName} For Help`,
-            };
-        }
-        if (!visible) {
-            return {
-                title: `${currentStage}`,
-                subtitle: `${currentAgentName} For Help`,
-            };
-        }
-        return {
-            title: `End Call With`,
-            subtitle: `${currentAgentName} For Help`,
+    // Cleanup microphone stream on component unmount
+    useEffect(() => {
+        return () => {
+            stopMicrophone();
         };
+    }, []);
+
+    // Function to mute the microphone
+    const muteMicrophone = () => {
+        if ((window as any).retellWebClient) {
+            (window as any).retellWebClient.mute();
+            console.log('Microphone muted using Retell SDK');
+        } else {
+            console.log('Retell web client not found');
+        }
     };
 
-    const { title, subtitle } = getChatText();
-    return (
-        //container
-        //call widgetRef inside the div
-        <div ref={widgetRef}>
+    // Function to unmute the microphone
+    const unmuteMicrophone = () => {
+        if ((window as any).retellWebClient) {
+            (window as any).retellWebClient.unmute();
+            console.log('Microphone unmuted using Retell SDK');
+        } else {
+            console.log('Retell web client not found');
+        }
+    };
 
+    // Function to stop the microphone stream completely
+    const stopMicrophone = () => {
+        if (micStream) {
+            micStream.getTracks().forEach(track => {
+                track.stop();
+            });
+            setMicStream(null);
+            console.log('Microphone stream stopped');
+        }
+    };
+
+    const openModal = () => {
+        setVisible(true);
+    };
+
+    const handleWidgetClick = () => {
+        if (callState === 'inactive') {
+            // Start call - request microphone access
+            checkMic();
+            setCallState('active');
+        } else if (callState === 'active') {
+            // End call
+            setVisible(false);
+            setCurrentAgentName(getWidgetConfig().agentName);
+            setCurrentStage('Speak With');
+            stopMicrophone();
+            setCallState('offline');
+        } else if (callState === 'offline') {
+            // Start new call
+            checkMic();
+            setCallState('active');
+        }
+    };
+
+    return (
+        <div ref={widgetRef}>
             {/* Call Modal Window */}
             <ModalWindow visible={visible} setVisible={setVisible} />
 
-            {/* Chat Button Component */}
-
-
-            <div className="chat-widget d-flex align-items-center  px-3 py-1 "
-                onClick={() => checkMic()}
+            {/* New Horizontal AI Assistant Widget - Correct speech bubble design */}
+            <div
+                style={{
+                    position: 'fixed',
+                    bottom: 32,
+                    right: 32,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'flex-end',
+                    cursor: 'pointer',
+                    zIndex: 1000,
+                }}
+                onClick={handleWidgetClick}
                 onMouseEnter={() => setHovered(true)}
                 onMouseLeave={() => setHovered(false)}
-                style={{ cursor: "pointer", maxWidth: "100%", width: "15rem", }}>
-                {/* Logo */}
-                <div className="chat-logo me-3" >
-                    <img src="https://scaleagilesolutions.com/wp-content/uploads/dist/logo.png" alt="Logo" className="chat-logo-img" />
+            >
+                {/* Main widget container with mic and speech bubble */}
+                <div
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        marginBottom: 8, // Space between main widget and agent status
+                    }}
+                >
+                    {/* Microphone Button - Just the icon, no background */}
+                    <div
+                        style={{
+                            width: 56,
+                            height: 56,
+                            borderRadius: '50%',
+                            background: callState === 'active' 
+                                ? 'transparent' 
+                                : callState === 'offline' 
+                                ? '#6B7280' 
+                                : 'linear-gradient(135deg, #d7c3b4 0%, #bfa897 100%)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer',
+                            transition: 'transform 0.2s ease',
+                            flexShrink: 0,
+                            zIndex: 2, // Above the white background
+                            boxShadow: callState === 'active' ? 'none' : '0 4px 12px rgba(0,0,0,0.15)',
+                        }}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            handleWidgetClick();
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = 'scale(1.05)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = 'scale(1)';
+                        }}
+                    >
+                        {/* Microphone Icon */}
+                        {callState === 'active' ? (
+                            <img 
+                                src="/Asset/active_call.png"
+                                alt="Active Microphone"
+                                width="59" 
+                                height="59" 
+                                style={{ 
+                                    filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.1))',
+                                    boxShadow: '0 0 20px rgba(20, 174, 92, 0.8)',
+                                    animation: 'pulse-green 2s infinite',
+                                    borderRadius: '50%'
+                                }}
+                            />
+                        ) : callState === 'offline' ? (
+                            <img 
+                                src="/Asset/mute_call.png"
+                                alt="Offline Microphone"
+                                width="59" 
+                                height="59" 
+                                style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.1))' }}
+                            />
+                        ) : (
+                            <img 
+                                src="/Asset/inactive_call.png"
+                                alt="Available Microphone"
+                                width="59" 
+                                height="59" 
+                                style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.1))' }}
+                            />
+                        )}
+                    </div>
+
+                    {/* Speech bubble - White background extending to the right */}
+                    <div
+                        style={{
+                            width: 176,
+                            backgroundColor: '#ffffff',
+                            borderRadius: '20px',
+                            padding: '5px 20px 6px 35px', // More padding on left to account for mic overlap
+                            marginLeft: -28, // Overlap with the mic icon
+                            boxShadow: '0 6px 20px rgba(0,0,0,0.15)',
+                            border: '1px solid #e0e0e0',
+                            animation: 'none',
+                            transition: 'all 0.2s ease',
+                            transform: hovered ? 'translateY(-2px)' : 'translateY(0)',
+                        }}
+                    >
+                        {/* Text Content */}
+                        <div
+                            style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'flex-start',
+                                justifyContent: 'center',
+                            }}
+                        >
+                            {/* Primary Text */}
+                            <div
+                                style={{
+                                    color: '#159895',
+                                    fontWeight: '600',
+                                    fontSize: '11px',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.3px',
+                                    lineHeight: 1.1,
+                                    marginBottom: 1,
+                                }}
+                            >
+                                {callState === 'offline' ? 'ASSISTANT' : callState === 'active' ? 'TELL ME HOW' : 'TALK TO OUR '}
+                            </div>
+                            {/* Secondary Text */}
+                            <div
+                                style={{
+                                    color: '#159895',
+                                    fontWeight: '600',
+                                    fontSize: '11px',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.3px',
+                                    lineHeight: 1.1,
+                                }}
+                            >
+                                {callState === 'offline' ? 'OFFLINE' : callState === 'active' ? 'I CAN HELP' : 'AI ASSISTANT'}
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-             
-            <div className="chat-text">
-                    <p className="chat-text-header text-white"  style={{ fontSize: '0.93rem' }}>
-                        {title} 
-                    </p>
-                    {subtitle && <p className="m-0 chat-subtitle chat-text-header text-white" style={{ fontSize: '0.93rem' }}>{subtitle}</p>}
-                    {/* <p className=".chat-powered" style={{ fontSize: '0.5rem' }}>
-                        Powered by <span className="fd">ConnexUS Ai</span>
-                    </p> */}
-                    <p className=" text-light opacity-70 text-end text-font-change" style={{ fontSize: '0.4rem' }}>Powered by ConnexUS AI</p>
+                {/* Agent Status - Outside and below the main widget */}
+                <div
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'flex-end',
+                        gap: 4,
+                        marginRight: 8, // Align with the right edge of the speech bubble
+                        marginTop: -11, // Move status text up closer
+                    }}
+                >
+                    {/* Agent Status Label */}
+                    <div
+                        style={{
+                            color: '#999999',
+                            fontSize: '9px',
+                            fontWeight: '400',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.2px',
+                        }}
+                    >
+                        {callState === 'active' || callState === 'offline' ? 'CALL STATUS:' : 'AGENT STATUS:'}
+                    </div>
+                    
+                    {/* Status Indicator Dot */}
+                    <div
+                        style={{
+                            width: 6,
+                            height: 6,
+                            borderRadius: '50%',
+                            backgroundColor: callState === 'active' 
+                                ? '#EC221F' 
+                                : callState === 'offline' 
+                                ? '#D1D5DB' 
+                                : '#2ecc71',
+                            flexShrink: 0,
+                            animation: callState === 'active' ? 'pulse-red 2s infinite' :  'none',
+                        }}
+                    />
+                    
+                    {/* Status Text */}
+                    <div
+                        style={{
+                            color: '#333333',
+                            fontSize: '10px',
+                            fontWeight: '600',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.2px',
+                        }}
+                    >
+                        {callState === 'offline' ? 'OFFLINE' : callState === 'active' ? 'NOW ASSISTING' : 'AVAILABLE'}
+                    </div>
                 </div>
             </div>
-
-          
-
-            
-
         </div>
     );
 }
-
 
 export default ChatWidget;
 
