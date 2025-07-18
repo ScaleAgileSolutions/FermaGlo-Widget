@@ -2,7 +2,6 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chat Widget</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -23,91 +22,32 @@
       }
       </style>
     <script>
-      // Function to request microphone permission
-      const requestMicrophonePermission = async () => {
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          console.log('Microphone permission granted');
-          return stream;
-        } catch (error) {
-          console.error('Microphone permission denied:', error);
-          // Show user-friendly error message
-          if (error.name === 'NotAllowedError') {
-            alert('Microphone access is required for voice chat. Please enable microphone permissions and refresh the page.');
-          } else if (error.name === 'NotFoundError') {
-            alert('No microphone found. Please connect a microphone and refresh the page.');
-          } else {
-            alert('Unable to access microphone. Please check your browser settings and refresh the page.');
-          }
-          throw error;
-        }
-      };
+      const urlParams = new URLSearchParams(window.location.search);
 
-      // Check if we're in an iframe and handle permissions accordingly
-      const isInIframe = () => {
-        try {
-          return window.self !== window.top;
-        } catch (e) {
-          return true;
-        }
-      };
 
-      // Initialize the widget with proper permission handling
-      const initializeWidget = async () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const tk = urlParams.get("tk") || "";
+      const tk = urlParams.get("tk") || "";
 
-        // If in iframe, show a message about permissions
-        if (isInIframe()) {
-          console.log('Widget is running in iframe mode');
-          // Pre-request microphone permission
+
+
+      const script = document.createElement("script");
+      script.src = "https://vocodia-maxoderm-multi-widget.pages.dev/chat-widget.js";
+      script.setAttribute("tk", tk);
+
+
+      script.onload = () => {
+        if (!window.__widget_initialized__) {
           try {
-            await requestMicrophonePermission();
-          } catch (error) {
-            console.error('Failed to get microphone permission in iframe:', error);
-          }
+            initializeChatWidget();
+          } catch (e) {}
+          window.__widget_initialized__ = true;
         }
-
-        const script = document.createElement("script");
-        script.src = "https://vocodia-maxoderm-multi-widget.pages.dev/chat-widget.js";
-        script.setAttribute("tk", tk);
-
-        script.onload = () => {
-          if (!window.__widget_initialized__) {
-            try {
-              // Make sure initializeChatWidget is available
-              if (typeof initializeChatWidget === 'function') {
-                initializeChatWidget();
-              } else {
-                console.error('initializeChatWidget function not found');
-              }
-            } catch (e) {
-              console.error('Error initializing chat widget:', e);
-            }
-            window.__widget_initialized__ = true;
-          }
-        };
-
-        script.onerror = () => {
-          console.error('Failed to load chat widget script');
-        };
-
-        document.head.appendChild(script);
       };
 
-      // Initialize when DOM is ready
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initializeWidget);
-      } else {
-        initializeWidget();
-      }
+
+      document.head.appendChild(script);
     </script>
   </head>
   <body>
     <div id="widget-container"></div>
-    <!-- Fallback message for browsers that don't support the widget -->
-    <noscript>
-      <p>This chat widget requires JavaScript to function properly.</p>
-    </noscript>
   </body>
-</html> 
+</html>
