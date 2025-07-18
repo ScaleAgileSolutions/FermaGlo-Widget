@@ -40,7 +40,6 @@ export const initializeWidgetConfig = async () => {
 
 // Export the configuration getter
 export const getWidgetConfig = () => {
-  console.log(widgetConfig);
   if (!widgetConfig) {
     throw new Error('Widget configuration not initialized.');
   }
