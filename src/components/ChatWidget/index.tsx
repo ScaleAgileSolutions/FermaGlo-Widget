@@ -114,9 +114,9 @@ function ChatWidget() {
     const muteMicrophone = () => {
         if ((window as any).retellWebClient) {
             (window as any).retellWebClient.mute();
-            console.log('Microphone muted using Retell SDK');
+            //console.('Microphone muted using Retell SDK');
         } else {
-            console.log('Retell web client not found');
+            console.log('not found');
         }
     };
 
@@ -124,9 +124,9 @@ function ChatWidget() {
     const unmuteMicrophone = () => {
         if ((window as any).retellWebClient) {
             (window as any).retellWebClient.unmute();
-            console.log('Microphone unmuted using Retell SDK');
+            //console.log('Microphone unmuted using Retell SDK');
         } else {
-            console.log('Retell web client not found');
+            console.log('not found');
         }
     };
 

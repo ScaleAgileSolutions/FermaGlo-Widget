@@ -43,7 +43,7 @@ class CallTrackingService {
 
       return await response.json();
     } catch (error) {
-      console.error('Error fetching call limit:', error);
+      console.error('Error fetching call limit:');
       throw error;
     }
   }
@@ -66,7 +66,7 @@ class CallTrackingService {
       const { canMakeCall } = await response.json();
       return canMakeCall;
     } catch (error) {
-      console.error('Error checking call limit:', error);
+      console.error('Error checking call limit:');
       throw error;
     }
   }
@@ -86,7 +86,7 @@ class CallTrackingService {
         throw new Error('Failed to increment call count');
       }
     } catch (error) {
-      console.error('Error incrementing call count:', error);
+      console.error('Error incrementing call count:');
       throw error;
     }
   }
@@ -109,7 +109,7 @@ class CallTrackingService {
       const { remainingCalls } = await response.json();
       return remainingCalls;
     } catch (error) {
-      console.error('Error getting remaining calls:', error);
+      console.error('Error getting remaining calls:');
       throw error;
     }
   }

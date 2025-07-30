@@ -26,7 +26,7 @@ const fetchWidgetConfig = async () => {
     return data;
   
   } catch (error) {
-    console.error('Error fetching widget configuration:', error);
+    console.error('Error fetching widget configuration:');
     // Return default configuration if fetch fails
     return {}
   }

@@ -88,7 +88,7 @@ function ModalWindow(props: ModalWindowProps) {
   async function registerCall(agentId: string, context: any = {}): Promise<RegisterCallResponse | null> {
     try {
       // Generate tracking data for analytics
-     console.log("registering call",...context);
+     //console.log("registering call",...context);
       setstartingCall(true);
       const trackingData: CallTrackingData = {
         sourceId: widgetConfig.sourceId,
@@ -167,7 +167,7 @@ function ModalWindow(props: ModalWindowProps) {
         }),
       });
       if (!response.ok) {
-        console.log(`Error: ${response.status}`);
+        //console.log(`Error: ${response.status}`);
         return null;
       }
 
@@ -193,13 +193,13 @@ function ModalWindow(props: ModalWindowProps) {
           }),
         });
       }catch(err){
-        console.error("Error saving call data:", err);
+        console.error("Error saving call data:");
       }
      
 
       return data;
     } catch (err) {
-      console.error("Call registration failed:", err);
+      console.error("Call registration failed:");
       return null;
     }
   }
@@ -208,12 +208,12 @@ function ModalWindow(props: ModalWindowProps) {
   const transferCall = async (newAgentId: string, context: any) => {
     // Prevent multiple concurrent transfers
     if (isTransferActive) {
-      console.log("Transfer already in progress, ignoring duplicate request");
+      //console.log("Transfer already in progress, ignoring duplicate request");
       return;
     }
 
     try {
-      console.log("Starting transfer to agent:", newAgentId);
+      //console.log("Starting transfer to agent:", newAgentId);
       setTransferActive(true); // Set flag immediately to prevent duplicates
       
       await retellWebClient.stopCall();
@@ -244,9 +244,9 @@ function ModalWindow(props: ModalWindowProps) {
       props.setVisible(true);
       transferTriggeredRef.current = false;
       
-      console.log("Transfer completed successfully");
+      //console.log("Transfer completed successfully");
     } catch (err) {
-      console.error("Transfer failed:", err);
+      console.error("Transfer failed:");
       setCallLimitError('Failed to transfer call. Please try again.');
       stopHoldMusic();
       setTransferActive(false); // Reset flag on error
@@ -256,11 +256,11 @@ function ModalWindow(props: ModalWindowProps) {
 
   // Function to end call and reset all states
   const endCallAndReset = async () => {
-    console.log("Ending call and resetting...");
+    //console.log("Ending call and resetting...");
     await retellWebClient.stopCall();
     setIsCalling(false);
     setTransferActive(false);
-    console.log("🧹 endCallAndReset - clearing chatData");
+    //console.log("🧹 endCallAndReset - clearing chatData");
     // debugSetChatData([]);
     setHasStartedInitialCall(false);
     // Update navigation warning service
@@ -284,41 +284,38 @@ function ModalWindow(props: ModalWindowProps) {
   const handleUpdate = async (update: any) => {
     let postData = []
     handleUpdateCounter.current++;
-    console.log(`🔥 handleUpdate called #${handleUpdateCounter.current} with:`, update);
+    //console.log(`🔥 handleUpdate called #${handleUpdateCounter.current} with:`, update);
     
     const last = update.transcript?.[update.transcript.length - 1];
     if (!last) {
-      console.log("❌ No last transcript found, returning early");
+      //console.log("❌ No last transcript found, returning early");
       return;
     }
     
     const newContent = last.content || "";
     const role = last.role;
     
-    console.log("📝 Processing message - Role:", role, "Content:", newContent);
-    console.log("📊 Current chatData before update:", chatData);
-    console.log("📊 ChatData length:", chatData.length);
-    console.log("📊 postData transcript:⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️", update.transcript);
+  
 
     debugSetChatData(prev => {
-      console.log("🔄 setChatData called - Previous data:", prev);
+   
       
       const lastMessage = prev[prev.length - 1];
       
       // If the last message is from the same role, UPDATE it instead of adding new
       if (lastMessage?.role === role) {
-        console.log("🔄 Updating existing message content");
+        ("🔄 Updating existing message content");
         const updatedMessage = { ...lastMessage, content: newContent };
         const newData = [...prev.slice(0, -1), updatedMessage];
-        console.log("🔄 Updated data:", newData);
+        ////console.log("🔄 Updated data:", newData);
        
         return newData;
       }
       
       // If different role or first message, ADD new message
-      console.log("🔄 Adding new message");
+      //console.log("🔄 Adding new message");
       const newData = [...prev, { role, content: newContent }];
-      console.log("🔄 New data:", newData);
+      //console.log("🔄 New data:", newData);
       return newData;
     }); 
    
@@ -338,7 +335,7 @@ function ModalWindow(props: ModalWindowProps) {
      // Handle user data collection based on agent questions
      if (role === "user" && newContent) {
       if (agentLastQuestion.current.includes("your name")) {
-        console.log("agentLastQuestion.current!!!!!!!!!!!!!!!!!!! Name",agentLastQuestion.current);
+        //console.log("agentLastQuestion.current!!!!!!!!!!!!!!!!!!! Name",agentLastQuestion.current);
         const nameParts = newContent.trim().split(" ");
         if (nameParts.length >= 2) {
           userData.current.first_name = nameParts[0];
@@ -367,11 +364,11 @@ function ModalWindow(props: ModalWindowProps) {
     const shouldTransfer = shouldTriggerTransfer(newContent, transferExamples);
     if (role === "agent" && shouldTransfer && !transferTriggeredRef.current) {
 
-    console.log("chatData before transfer!!!!!!!!!!!!!!!!!!!",chatData);
+    //console.log("chatData before transfer!!!!!!!!!!!!!!!!!!!",chatData);
       transferTriggeredRef.current = true;
       const summary = update.transcript.map(msg => `${msg.role}: ${msg.content}`).join("\n");
       await wait(3000);
-      console.log("transferring to agent!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",summary);
+      //console.log("transferring to agent!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",summary);
       (window as any).transferToAgent?.(widgetConfig.transferAgentName);
       
       await transferCall(widgetConfig.transferAgentId, {
@@ -402,24 +399,24 @@ function ModalWindow(props: ModalWindowProps) {
 
   // Effect to set up Retell client event listeners
   useEffect(() => {
-    console.log("🎧 Setting up Retell event listeners");
+    //console.log("🎧 Setting up Retell event listeners");
     const client = retellWebClient;
 
     const handleCallStarted = () => {
-      console.log("📞 Call started event received");
+      //console.log("📞 Call started event received");
       setIsCalling(true);
       // Update navigation warning service
       navigationWarningService.setCallActive(true);
     };
     const handleCallEnded = (data) => {
-      console.log("📞 Call ended event received", data);
+      //console.log("📞 Call ended event received", data);
       setIsCalling(false);
       // Update navigation warning service
       navigationWarningService.setCallActive(false);
       props.setVisible(false);
     };
     const handleError = (err) => {
-      console.error("❌ Call error:", err);
+      console.error("❌ Call error:");
       client.stopCall();
     };
 
@@ -428,10 +425,10 @@ function ModalWindow(props: ModalWindowProps) {
     client.on("update", handleUpdate);
     client.on("error", handleError);
     
-    console.log("✅ Event listeners attached successfully");
+    //console.log("✅ Event listeners attached successfully");
 
     return () => {
-      console.log("🧹 Cleaning up event listeners");
+      //console.log("🧹 Cleaning up event listeners");
       client.off("call_started", handleCallStarted);
       client.off("call_ended", handleCallEnded);
       client.off("update", handleUpdate);
@@ -443,7 +440,7 @@ function ModalWindow(props: ModalWindowProps) {
   useEffect(() => {
     const setupCall = async () => {
       if (props.visible && !isTransferActive && !hasStartedInitialCall) {
-        // console.log("Setting up call... canMakeCall", canMakeCall);
+        // //console.log("Setting up call... canMakeCall", canMakeCall);
         // if (!canMakeCall) {
         //   setCallLimitError('You have reached your call limit for this period.');
         //   return;
@@ -472,7 +469,7 @@ function ModalWindow(props: ModalWindowProps) {
             })
             });
           } catch (callError) {
-            console.error("Failed to start call:", callError);
+            //console.error("Failed to start call:", callError);
             setCallLimitError('Failed to start call. Please try again.');
             return;
           }
@@ -492,11 +489,11 @@ function ModalWindow(props: ModalWindowProps) {
           setHasStartedInitialCall(true);
           setCallLimitError(null);
         } catch (err) {
-          console.error("Call registration failed:", err);
+          //console.error("Call registration failed:", err);
           setCallLimitError('Failed to update call count. Please try again.');
         }
       } else if (!props.visible && isTransferActive === false) {
-        console.log("Widget closed - cleaning up call");
+        //console.log("Widget closed - cleaning up call");
         endCallAndReset();
       }
     };
@@ -519,7 +516,7 @@ function ModalWindow(props: ModalWindowProps) {
         },
         onCancelNavigate: () => {
           // User cancelled navigation, do nothing
-          console.log('Navigation cancelled by user');
+          //console.log('Navigation cancelled by user');
         }
       });
     }
@@ -540,14 +537,14 @@ function ModalWindow(props: ModalWindowProps) {
 
   // Debug wrapper for setChatData to track all calls
   const debugSetChatData = (value: any) => {
-    // console.log("🐛 setChatData called with:", value);
+    // //console.log("🐛 setChatData called with:", value);
     // console.trace("🐛 Call stack:");
     setChatData(value);
   };
 
   // Monitor chatData changes
   useEffect(() => {
-    console.log("🔍 ChatData changed - Length:", chatData.length, "Data:", chatData);
+    //console.log("🔍 ChatData changed - Length:", chatData.length, "Data:", chatData);
   }, [chatData]);
 
   // Render the chat interface
