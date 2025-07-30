@@ -2,6 +2,7 @@ import { allowedOrigins } from './allowedOrigins';
 const scriptTag = document.currentScript as HTMLScriptElement | null;
 
 let tk = scriptTag?.getAttribute("tk") || 'MVINbTAdbz86JcLYi62TuIHGv6AdHvQcbVQSCDRcs877vu6F2sGUrBUZJjg19Do4YWvbzIaH6ZGZ4rakJzdyeGc9PQ..'
+let parentOrigin = scriptTag?.getAttribute("parent-origin") || 'unknown'
 // Custom Base64 obfuscator
 
 // Function to fetch widget configuration
@@ -18,7 +19,11 @@ const fetchWidgetConfig = async () => {
       throw new Error('Failed to fetch widget configuration');
     }
     // console.log(response,'response.data')
-    return await response.json();
+    let data = await response.json();
+     data.data.parentOrigin = parentOrigin;
+     console.log(parentOrigin,'website')
+    //  data.data.parentOrigin = 'http://localhost:4000';
+    return data;
   
   } catch (error) {
     console.error('Error fetching widget configuration:', error);
@@ -40,6 +45,7 @@ export const initializeWidgetConfig = async () => {
 
 // Export the configuration getter
 export const getWidgetConfig = () => {
+
   if (!widgetConfig) {
     throw new Error('Widget configuration not initialized.');
   }

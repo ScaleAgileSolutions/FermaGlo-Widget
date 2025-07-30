@@ -26,22 +26,34 @@ export const initializeChatWidget = async () => {
     }
 };
 
-console.log('Window loaded, initializing widget... First step');
+console.log('Window loaded, initializing widget... First step',window);
 if (typeof window !== 'undefined') {
-    window.onload = async () => {
+    console.log(' First step under if',window);
+ 
+    const runWidgetInitialization = async () => {
         console.log('Window loaded, initializing widget... Second step');
         try{
             await initializeWidgetConfig();
-            let data = getWidgetConfig().domains.includes(window.location.origin)
-            console.log('data',data)
+           let parentOrigin = getWidgetConfig().parentOrigin;
+           let data = getWidgetConfig().domains.includes(parentOrigin)
+           console.log('widget',parentOrigin )
+        
             if(data){
-                console.log('Initializing chat widget... Third step');
-                await initializeChatWidget();
+               console.log('this is data in the second step',data)
+               await initializeChatWidget();
             }
         }catch(err){
             console.log('Please check your widget configuration')
         }
     };
+
+    if (document.readyState === 'complete') {
+      // The page is already loaded, so run the initialization immediately.
+      runWidgetInitialization();
+    } else {
+      // The page is still loading, so wait for the 'load' event.
+      window.addEventListener('load', runWidgetInitialization);
+    }
 } else {
     console.log('Not Initialized');
 }
