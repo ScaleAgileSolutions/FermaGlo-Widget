@@ -7,8 +7,7 @@ import { getWidgetConfig, initializeWidgetConfig } from './constants/config';
 
 // Create and export a global function to render the widget for embedding purposes
 export const initializeChatWidget = async () => {
-    try {
-   
+    try {   
         console.log('Initializing chat widget...');
         const div = document.createElement('div');
         div.id = getWidgetConfig().divId;
