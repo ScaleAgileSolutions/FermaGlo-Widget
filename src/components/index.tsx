@@ -229,7 +229,6 @@ function ChatWidget() {
       }
     } catch (e) {
       console.error("sendMessage error:", e);
-      // opcional: empuja un mensaje de error del sistema
       setChatMessages((prev) => [
         ...prev,
         {
