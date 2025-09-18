@@ -307,7 +307,6 @@ function ChatWidget() {
           onRequestClose={() => setShowConfirmClose(true)}
         />
         <AnimatedContainer viewKey={currentView}>
-          hi
           {currentView === "welcome" ? (
             <WelcomeView
               onSelectChat={() => setCurrentView("chat")}
