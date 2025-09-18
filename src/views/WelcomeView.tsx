@@ -57,7 +57,7 @@ const WelcomeView: React.FC<Props> = ({ onSelectChat, onSelectCall }) => {
       >
         <span style={{ fontSize: 18 }}>
           <img
-            src="Icon_ChatWithUs.svg"
+            src="assets/Icon_ChatWithUs.svg"
             width={20}
             style={{
               objectFit: "contain",

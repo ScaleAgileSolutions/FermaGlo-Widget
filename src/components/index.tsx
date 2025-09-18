@@ -280,8 +280,6 @@ function ChatWidget() {
       <div
         style={{
           position: "fixed",
-          bottom: 32,
-          right: 32,
           width: panelWidth,
           borderRadius: 16,
           background: "#fff",
