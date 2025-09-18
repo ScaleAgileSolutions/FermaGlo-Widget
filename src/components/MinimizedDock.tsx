@@ -1,5 +1,9 @@
 import React from "react";
 
+// importa los assets para que webpack genere la URL correcta
+import bgUrl from "../assets/Fermaglo_Image04.svg";
+import markUrl from "../../assets/Fermaglo_Image01.png";
+
 type Props = {
   onRestore: () => void;
 };
@@ -27,7 +31,7 @@ const MinimizedDock: React.FC<Props> = ({ onRestore }) => {
         }}
       >
         <img
-          src="/Fermaglo_Image04.svg"
+          src={bgUrl}
           alt=""
           aria-hidden="true"
           style={{
@@ -39,6 +43,7 @@ const MinimizedDock: React.FC<Props> = ({ onRestore }) => {
             pointerEvents: "none",
             userSelect: "none",
           }}
+          loading="lazy"
         />
 
         <div
@@ -64,11 +69,12 @@ const MinimizedDock: React.FC<Props> = ({ onRestore }) => {
           </div>
 
           <img
-            src="/Fermaglo_Image01.png"
+            src={markUrl}
             alt="Glo mark"
             width={84}
             height={84}
             style={{ objectFit: "contain" }}
+            loading="lazy"
           />
         </div>
       </div>
