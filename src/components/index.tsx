@@ -243,7 +243,6 @@ function ChatWidget() {
     }
   };
 
-  // helper local para mapear mensajes del backend a tu UI
   function appendAssistant(messages: { role: string; content: string }[]) {
     const assistantTexts = messages
       .filter((m) => m.role === "assistant" && m.content?.trim())
@@ -275,10 +274,9 @@ function ChatWidget() {
   return (
     <div ref={widgetRef}>
       <ModalWindow visible={visible} setVisible={setVisible} />
-
       <div
         style={{
-          position: "fixed",
+          position: "relative",
           width: panelWidth,
           borderRadius: 16,
           background: "#fff",
@@ -308,8 +306,8 @@ function ChatWidget() {
           onMinimize={handleMinimize}
           onRequestClose={() => setShowConfirmClose(true)}
         />
-
         <AnimatedContainer viewKey={currentView}>
+          hi
           {currentView === "welcome" ? (
             <WelcomeView
               onSelectChat={() => setCurrentView("chat")}
@@ -334,7 +332,6 @@ function ChatWidget() {
             />
           )}
         </AnimatedContainer>
-
         <ConfirmCloseModal
           open={showConfirmClose}
           mode={currentView === "chat" ? "chat" : "call"}
@@ -357,7 +354,6 @@ function ChatWidget() {
           }}
           onCancel={() => setShowConfirmClose(false)}
         />
-
         <div
           style={{
             padding: "8px 12px 14px",

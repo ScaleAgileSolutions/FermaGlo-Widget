@@ -38,11 +38,11 @@ export const styles = {
     right: "20px",
     // Size
     // width: "370px",
-    // width: "420px",
-    // height: "59vh",
+    width: "420px",
+    height: "59vh",
     // height: "25vh",
-    // maxWidth: "calc(100% - 48px)",
-    // maxHeight: "calc(100% - 48px)",
+    maxWidth: "calc(100% - 48px)",
+    maxHeight: "calc(100% - 48px)",
     backgroundColor: " #1e1e1e",
     // Border
     borderRadius: "12px",
