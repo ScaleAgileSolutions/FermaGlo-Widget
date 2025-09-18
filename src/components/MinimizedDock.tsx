@@ -27,7 +27,7 @@ const MinimizedDock: React.FC<Props> = ({ onRestore }) => {
         }}
       >
         <img
-          src="/Fermaglo_Image04.svg"
+          src="assets/Fermaglo_Image04.svg"
           alt=""
           aria-hidden="true"
           style={{
@@ -64,7 +64,7 @@ const MinimizedDock: React.FC<Props> = ({ onRestore }) => {
           </div>
 
           <img
-            src="/Fermaglo_Image01.png"
+            src="assets/Fermaglo_Image01.png"
             alt="Glo mark"
             width={84}
             height={84}

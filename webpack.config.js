@@ -10,12 +10,14 @@ module.exports = {
 
   // Output configuration
   output: {
-    filename: "chat-widget.js", // Name of the bundled JS file
-    path: path.resolve(__dirname, "dist"), // Output directory
-    library: "ChatWidget", // Name of the global variable when used as a library
-    libraryTarget: "umd", // Universal Module Definition - works in any environment
-    globalObject: "this", // Ensures compatibility in browser environments
-    publicPath: "auto",
+    filename: "chat-widget.js",
+    path: path.resolve(__dirname, "dist"),
+    library: "ChatWidget",
+    libraryTarget: "umd",
+    globalObject: "this",
+    publicPath: "",
+    assetModuleFilename: "assets/[name].[contenthash][ext]",
+    clean: true,
   },
 
   // Module resolution configuration
@@ -52,6 +54,10 @@ module.exports = {
         {
           from: "public/Asset",
           to: "Asset",
+        },
+        {
+          from: "public/assets",
+          to: "assets",
         },
         {
           from: "public/Jazz.mp3",

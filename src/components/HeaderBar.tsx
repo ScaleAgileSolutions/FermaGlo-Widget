@@ -41,7 +41,7 @@ const HeaderBar: React.FC<Props> = ({
           }}
         >
           <img
-            src="/Icon_BackArrow.svg"
+            src="assets/Icon_BackArrow.svg"
             alt=""
             width={20}
             height={20}
@@ -66,7 +66,7 @@ const HeaderBar: React.FC<Props> = ({
           }}
         >
           <img
-            src="/Icon_Minimized.svg"
+            src="assets/Icon_Minimized.svg"
             alt=""
             width={20}
             height={20}
@@ -86,7 +86,7 @@ const HeaderBar: React.FC<Props> = ({
           }}
         >
           <img
-            src="/Icon_Close.svg"
+            src="assets/Icon_Close.svg"
             alt=""
             width={20}
             height={20}

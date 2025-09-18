@@ -59,7 +59,7 @@ const CallView: React.FC<Props> = ({
             }}
           />
           <img
-            src="/Fermaglo_Image01.png"
+            src="assets/Fermaglo_Image01.png"
             alt="Glo brand mark"
             style={{
               position: "absolute",

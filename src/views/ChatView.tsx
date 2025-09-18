@@ -121,7 +121,7 @@ const ChatView: React.FC<Props> = ({
             >
               {!isUser && (
                 <img
-                  src="/Fermaglo_Image01.png"
+                  src="assets/Fermaglo_Image01.png"
                   alt=""
                   width={24}
                   height={24}

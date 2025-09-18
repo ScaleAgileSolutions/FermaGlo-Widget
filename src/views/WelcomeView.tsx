@@ -17,7 +17,7 @@ const WelcomeView: React.FC<Props> = ({ onSelectChat, onSelectCall }) => {
     >
       <div style={{ display: "flex", justifyContent: "flex-start" }}>
         <img
-          src="/Fermaglo_Image01.png"
+          src="assets/Fermaglo_Image01.png"
           alt="Brandmark"
           width={48}
           height={48}
@@ -87,7 +87,7 @@ const WelcomeView: React.FC<Props> = ({ onSelectChat, onSelectCall }) => {
       >
         <span style={{ fontSize: 16 }}>
           <img
-            src="/Icon_CallUs.svg"
+            src="assets/Icon_CallUs.svg"
             width={20}
             style={{
               objectFit: "contain",
