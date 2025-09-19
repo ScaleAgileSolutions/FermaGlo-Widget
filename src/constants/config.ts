@@ -55,7 +55,7 @@ export const getWidgetConfig = () => {
   }
   return widgetConfig.data;
 };
-export const Key = "key_3b3cfc3d7881e2a6711bbece13d1";
+export const Key = "key_35cff8f30bf8bb98d31b4f11a199";
 
 // Export allowed origins
 export { allowedOrigins };
