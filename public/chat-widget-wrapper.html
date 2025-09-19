@@ -54,7 +54,14 @@
 
       let parentOrigin = "";
 
-      const postHeight = (() => {
+      // --- Envío de altura ---
+      // Envío inmediato (sin debounce) para el bombeo por frame
+      const postHeightImmediate = (h) => {
+        window.parent.postMessage({ type: "WIDGET_HEIGHT", height: h }, "*");
+      };
+
+      // (opcional) Envío con leve debounce para eventos no críticos
+      const postHeightDebounced = (() => {
         let t;
         return (h) => {
           clearTimeout(t);
@@ -67,23 +74,56 @@
         };
       })();
 
-      function measureAndPostHeight() {
-        const container = document.getElementById("ConnexUSVRep-chat");
-        if (!container) return;
-        const h = Math.max(container.scrollHeight, 1);
-        postHeight(h);
+      // Medición estable del contenedor
+      function measureHeight() {
+        const el = document.getElementById("ConnexUSVRep-chat");
+        if (!el) return 0;
+        // offsetHeight suele reflejar mejor el box-size durante transiciones
+        return Math.max(el.offsetHeight, el.scrollHeight, 1);
       }
 
+      // API simple (no-frame) para responder peticiones puntuales de tamaño
+      function measureAndPostHeight() {
+        const h = measureHeight();
+        if (h) postHeightImmediate(h);
+      }
+
+      // --- Bomba por frame (para animaciones/transiciones) ---
+      let rafId = null;
+      let pumpingUntil = 0;
+
+      function pump() {
+        const now = performance.now();
+        const h = measureHeight();
+        if (h) postHeightImmediate(h);
+        if (now < pumpingUntil) {
+          rafId = requestAnimationFrame(pump);
+        } else {
+          rafId = null;
+        }
+      }
+
+      function startPump(ms = 500) {
+        pumpingUntil = performance.now() + ms;
+        if (rafId == null) rafId = requestAnimationFrame(pump);
+      }
+
+      // --- Observadores de altura enfocados SOLO al contenedor ---
       function attachHeightObservers() {
         const container = document.getElementById("ConnexUSVRep-chat");
         if (!container) return false;
 
+        // Altura inicial
+        measureAndPostHeight();
+
+        // Cambios de tamaño del box
         if ("ResizeObserver" in window) {
-          const ro = new ResizeObserver(measureAndPostHeight);
+          const ro = new ResizeObserver(() => startPump(400));
           ro.observe(container);
         }
 
-        const mo = new MutationObserver(measureAndPostHeight);
+        // Cambios del DOM interno
+        const mo = new MutationObserver(() => startPump(300));
         mo.observe(container, {
           childList: true,
           subtree: true,
@@ -91,10 +131,23 @@
           characterData: true,
         });
 
-        measureAndPostHeight();
+        // Eventos de transición/animación del contenedor
+        ["transitionstart", "transitionrun", "animationstart"].forEach((ev) =>
+          container.addEventListener(ev, () => startPump(800))
+        );
+        ["transitionend", "animationend"].forEach((ev) =>
+          container.addEventListener(ev, () => startPump(120))
+        );
+        container.addEventListener("animationiteration", () => startPump(400));
+
+        // Ventana del iframe
+        window.addEventListener("load", () => startPump(200));
+        window.addEventListener("resize", () => startPump(200));
+
         return true;
       }
 
+      // Espera a que aparezca el contenedor (si lo pinta el widget de forma asíncrona)
       function waitForContainerAndAttach(maxTries = 60, intervalMs = 250) {
         let tries = 0;
         const timer = setInterval(() => {
@@ -104,43 +157,41 @@
           } else if (tries >= maxTries) {
             clearInterval(timer);
             console.warn(
-              "⚠️ No se encontró #ConnexUSVRep-chat para observar altura."
+              "no #ConnexUSVRep-chat found, height can't be watched."
             );
           }
         }, intervalMs);
       }
 
+      // --- Mensajería con el padre ---
       window.parent.postMessage("REQUEST_PARENT_ORIGIN", "*");
 
       window.addEventListener("message", function (event) {
         const data = event.data;
 
-        // Parent origin
         if (data?.type === "PARENT_ORIGIN") {
           parentOrigin = data.origin;
-          console.log("✅ Parent origin is:", parentOrigin);
+          console.log("Parent origin is:", parentOrigin);
           loadChatWidget(tk, parentOrigin);
           return;
         }
 
         if (data?.type === "REQUEST_SIZE") {
-          measureAndPostHeight();
+          // Cuando el padre pida tamaño, bombeamos unos frames
+          startPump(300);
           return;
         }
 
         if (data?.type === "TRIGGER_IFRAME_CLICK") {
-          console.log(document.body.innerHTML);
           const micButton = document.querySelector(
             'img[alt="Available Microphone"], img[alt="Active Microphone"], img[alt="Offline Microphone"]'
           );
-          if (micButton) {
-            console.log(`Found: ${micButton.alt}`);
-            micButton.click();
-          }
+          if (micButton) micButton.click();
           return;
         }
       });
 
+      // Fallback si el padre no responde con su origin
       setTimeout(() => {
         if (!parentOrigin) {
           console.warn("⚠️ No response from parent. Using fallback.");
@@ -148,7 +199,7 @@
         }
       }, 1000);
 
-      // Load the actual widget script
+      // Carga el script real del widget
       function loadChatWidget(tk, origin) {
         const script = document.createElement("script");
         script.src = "https://fermaglo-widget.pages.dev/chat-widget.js";
@@ -159,7 +210,6 @@
         script.onload = () => {
           if (!window.__widget_initialized__) {
             try {
-              // Inicializa el widget
               if (typeof initializeChatWidget === "function") {
                 initializeChatWidget({ origin });
               }
@@ -167,14 +217,17 @@
               console.error("initializeChatWidget error:", e);
             } finally {
               window.__widget_initialized__ = true;
+              // En cuanto el widget pinte el contenedor, engancha observadores
               waitForContainerAndAttach();
-              setTimeout(measureAndPostHeight, 50);
+              // Primer envío rápido por si ya existe
+              setTimeout(() => startPump(250), 50);
             }
           }
         };
 
         document.head.appendChild(script);
       }
+
       document.addEventListener("DOMContentLoaded", () => {
         waitForContainerAndAttach();
       });
