@@ -46,6 +46,7 @@
 
       document.head.appendChild(script);
     </script> -->
+
     <script>
       // Parse tk from the URL
       const urlParams = new URLSearchParams(window.location.search);
@@ -53,30 +54,93 @@
 
       let parentOrigin = "";
 
-      // Ask the parent for its origin
+      const postHeight = (() => {
+        let t;
+        return (h) => {
+          clearTimeout(t);
+          t = setTimeout(() => {
+            window.parent.postMessage(
+              { type: "WIDGET_HEIGHT", height: h },
+              "*"
+            );
+          }, 40);
+        };
+      })();
+
+      function measureAndPostHeight() {
+        const container = document.getElementById("ConnexUSVRep-chat");
+        if (!container) return;
+        const h = Math.max(container.scrollHeight, 1);
+        postHeight(h);
+      }
+
+      function attachHeightObservers() {
+        const container = document.getElementById("ConnexUSVRep-chat");
+        if (!container) return false;
+
+        if ("ResizeObserver" in window) {
+          const ro = new ResizeObserver(measureAndPostHeight);
+          ro.observe(container);
+        }
+
+        const mo = new MutationObserver(measureAndPostHeight);
+        mo.observe(container, {
+          childList: true,
+          subtree: true,
+          attributes: true,
+          characterData: true,
+        });
+
+        measureAndPostHeight();
+        return true;
+      }
+
+      function waitForContainerAndAttach(maxTries = 60, intervalMs = 250) {
+        let tries = 0;
+        const timer = setInterval(() => {
+          tries++;
+          if (attachHeightObservers()) {
+            clearInterval(timer);
+          } else if (tries >= maxTries) {
+            clearInterval(timer);
+            console.warn(
+              "⚠️ No se encontró #ConnexUSVRep-chat para observar altura."
+            );
+          }
+        }, intervalMs);
+      }
+
       window.parent.postMessage("REQUEST_PARENT_ORIGIN", "*");
 
-      // Listen for the parent's response
       window.addEventListener("message", function (event) {
-        parentOrigin = event.data.origin;
-        if (event.data?.type === "PARENT_ORIGIN") {
+        const data = event.data;
+
+        // Parent origin
+        if (data?.type === "PARENT_ORIGIN") {
+          parentOrigin = data.origin;
           console.log("✅ Parent origin is:", parentOrigin);
           loadChatWidget(tk, parentOrigin);
+          return;
         }
-        if (event.data?.type === "TRIGGER_IFRAME_CLICK") {
+
+        if (data?.type === "REQUEST_SIZE") {
+          measureAndPostHeight();
+          return;
+        }
+
+        if (data?.type === "TRIGGER_IFRAME_CLICK") {
           console.log(document.body.innerHTML);
           const micButton = document.querySelector(
             'img[alt="Available Microphone"], img[alt="Active Microphone"], img[alt="Offline Microphone"]'
           );
-
           if (micButton) {
             console.log(`Found: ${micButton.alt}`);
             micButton.click();
           }
+          return;
         }
       });
 
-      // Fallback in case message never arrives (e.g., blocked or unsupported)
       setTimeout(() => {
         if (!parentOrigin) {
           console.warn("⚠️ No response from parent. Using fallback.");
@@ -95,15 +159,25 @@
         script.onload = () => {
           if (!window.__widget_initialized__) {
             try {
-              initializeChatWidget({ origin });
+              // Inicializa el widget
+              if (typeof initializeChatWidget === "function") {
+                initializeChatWidget({ origin });
+              }
             } catch (e) {
+              console.error("initializeChatWidget error:", e);
+            } finally {
               window.__widget_initialized__ = true;
+              waitForContainerAndAttach();
+              setTimeout(measureAndPostHeight, 50);
             }
           }
         };
 
         document.head.appendChild(script);
       }
+      document.addEventListener("DOMContentLoaded", () => {
+        waitForContainerAndAttach();
+      });
     </script>
   </head>
   <body>
