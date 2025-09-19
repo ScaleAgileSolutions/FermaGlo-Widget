@@ -48,140 +48,94 @@
     </script> -->
 
     <script>
-      // Parse tk from the URL
       const urlParams = new URLSearchParams(window.location.search);
       const tk = urlParams.get("tk") || "";
-
       let parentOrigin = "";
+      let rafId = null,
+        pumpingUntil = 0;
 
-      // --- Envío de altura ---
-      // Envío inmediato (sin debounce) para el bombeo por frame
-      const postHeightImmediate = (h) => {
-        window.parent.postMessage({ type: "WIDGET_HEIGHT", height: h }, "*");
+      const postSize = (w, h) => {
+        window.parent.postMessage(
+          { type: "WIDGET_SIZE", width: w, height: h },
+          "*"
+        );
       };
 
-      // (opcional) Envío con leve debounce para eventos no críticos
-      const postHeightDebounced = (() => {
-        let t;
-        return (h) => {
-          clearTimeout(t);
-          t = setTimeout(() => {
-            window.parent.postMessage(
-              { type: "WIDGET_HEIGHT", height: h },
-              "*"
-            );
-          }, 40);
-        };
-      })();
-
-      // Medición estable del contenedor
-      function measureHeight() {
+      function measure() {
         const el = document.getElementById("ConnexUSVRep-chat");
-        if (!el) return 0;
-        // offsetHeight suele reflejar mejor el box-size durante transiciones
-        return Math.max(el.offsetHeight, el.scrollHeight, 1);
+        if (!el) return { w: 0, h: 0 };
+        return {
+          w: Math.max(el.offsetWidth, el.scrollWidth, 1),
+          h: Math.max(el.offsetHeight, el.scrollHeight, 1),
+        };
       }
 
-      // API simple (no-frame) para responder peticiones puntuales de tamaño
-      function measureAndPostHeight() {
-        const h = measureHeight();
-        if (h) postHeightImmediate(h);
+      function pumpOnce() {
+        const { w, h } = measure();
+        if (w && h) postSize(w, h);
       }
-
-      // --- Bomba por frame (para animaciones/transiciones) ---
-      let rafId = null;
-      let pumpingUntil = 0;
 
       function pump() {
         const now = performance.now();
-        const h = measureHeight();
-        if (h) postHeightImmediate(h);
-        if (now < pumpingUntil) {
-          rafId = requestAnimationFrame(pump);
-        } else {
-          rafId = null;
-        }
+        pumpOnce();
+        if (now < pumpingUntil) rafId = requestAnimationFrame(pump);
+        else rafId = null;
       }
 
       function startPump(ms = 500) {
         pumpingUntil = performance.now() + ms;
-        if (rafId == null) rafId = requestAnimationFrame(pump);
+        if (!rafId) rafId = requestAnimationFrame(pump);
       }
 
-      // --- Observadores de altura enfocados SOLO al contenedor ---
-      function attachHeightObservers() {
-        const container = document.getElementById("ConnexUSVRep-chat");
-        if (!container) return false;
-
-        // Altura inicial
-        measureAndPostHeight();
-
-        // Cambios de tamaño del box
+      function attachObservers() {
+        const el = document.getElementById("ConnexUSVRep-chat");
+        if (!el) return false;
+        pumpOnce();
         if ("ResizeObserver" in window) {
           const ro = new ResizeObserver(() => startPump(400));
-          ro.observe(container);
+          ro.observe(el);
         }
-
-        // Cambios del DOM interno
         const mo = new MutationObserver(() => startPump(300));
-        mo.observe(container, {
+        mo.observe(el, {
           childList: true,
           subtree: true,
           attributes: true,
           characterData: true,
         });
-
-        // Eventos de transición/animación del contenedor
         ["transitionstart", "transitionrun", "animationstart"].forEach((ev) =>
-          container.addEventListener(ev, () => startPump(800))
+          el.addEventListener(ev, () => startPump(800))
         );
         ["transitionend", "animationend"].forEach((ev) =>
-          container.addEventListener(ev, () => startPump(120))
+          el.addEventListener(ev, () => startPump(120))
         );
-        container.addEventListener("animationiteration", () => startPump(400));
-
-        // Ventana del iframe
+        el.addEventListener("animationiteration", () => startPump(400));
         window.addEventListener("load", () => startPump(200));
         window.addEventListener("resize", () => startPump(200));
-
         return true;
       }
 
-      // Espera a que aparezca el contenedor (si lo pinta el widget de forma asíncrona)
-      function waitForContainerAndAttach(maxTries = 60, intervalMs = 250) {
+      function waitForContainer(maxTries = 60, intervalMs = 250) {
         let tries = 0;
         const timer = setInterval(() => {
           tries++;
-          if (attachHeightObservers()) {
-            clearInterval(timer);
-          } else if (tries >= maxTries) {
-            clearInterval(timer);
-            console.warn(
-              "no #ConnexUSVRep-chat found, height can't be watched."
-            );
-          }
+          if (attachObservers()) clearInterval(timer);
+          else if (tries >= maxTries) clearInterval(timer);
         }, intervalMs);
       }
 
-      // --- Mensajería con el padre ---
       window.parent.postMessage("REQUEST_PARENT_ORIGIN", "*");
 
       window.addEventListener("message", function (event) {
         const data = event.data;
-
         if (data?.type === "PARENT_ORIGIN") {
           parentOrigin = data.origin;
-          console.log("Parent origin is:", parentOrigin);
           loadChatWidget(tk, parentOrigin);
           return;
         }
-
         if (data?.type === "REQUEST_SIZE") {
-          // Cuando el padre pida tamaño, bombeamos unos frames
           startPump(300);
           return;
         }
-
         if (data?.type === "TRIGGER_IFRAME_CLICK") {
           const micButton = document.querySelector(
             'img[alt="Available Microphone"], img[alt="Active Microphone"], img[alt="Offline Microphone"]'
@@ -191,22 +145,15 @@
         }
       });
 
-      // Fallback si el padre no responde con su origin
       setTimeout(() => {
-        if (!parentOrigin) {
-          console.warn("⚠️ No response from parent. Using fallback.");
-          loadChatWidget(tk, "unknown");
-        }
+        if (!parentOrigin) loadChatWidget(tk, "unknown");
       }, 1000);
 
-      // Carga el script real del widget
       function loadChatWidget(tk, origin) {
         const script = document.createElement("script");
         script.src = "https://fermaglo-widget.pages.dev/chat-widget.js";
         script.setAttribute("tk", tk);
         script.setAttribute("parent-origin", origin);
-
-        console.log("origin!!!!!", origin);
         script.onload = () => {
           if (!window.__widget_initialized__) {
             try {
@@ -214,22 +161,18 @@
                 initializeChatWidget({ origin });
               }
             } catch (e) {
-              console.error("initializeChatWidget error:", e);
             } finally {
               window.__widget_initialized__ = true;
-              // En cuanto el widget pinte el contenedor, engancha observadores
-              waitForContainerAndAttach();
-              // Primer envío rápido por si ya existe
+              waitForContainer();
               setTimeout(() => startPump(250), 50);
             }
           }
         };
-
         document.head.appendChild(script);
       }
 
       document.addEventListener("DOMContentLoaded", () => {
-        waitForContainerAndAttach();
+        waitForContainer();
       });
     </script>
   </head>
