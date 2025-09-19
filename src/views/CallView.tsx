@@ -38,8 +38,8 @@ const CallView: React.FC<Props> = ({
           <img
             src={
               callState === "active" && micStatus === "active"
-                ? "/Fermaglo_Image03.gif"
-                : "/Fermaglo_Image02.png"
+                ? "assets/Fermaglo_Image03.gif"
+                : "assets/Fermaglo_Image02.png"
             }
             alt=""
             aria-hidden="true"
