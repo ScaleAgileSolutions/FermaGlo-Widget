@@ -1,4 +1,5 @@
-const BASE = "http://localhost:3001/api/retell";
+// const BASE = "http://localhost:3001/api/retell";
+const BASE = "https://retell-worker.cadmussupport.workers.dev/api/retell";
 
 export async function startChat(agentId: string, metadata?: any) {
   const r = await fetch(`${BASE}/chat/start`, {
