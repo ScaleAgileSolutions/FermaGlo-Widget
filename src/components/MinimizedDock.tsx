@@ -27,7 +27,7 @@ const MinimizedDock: React.FC<Props> = ({ onRestore }) => {
         }}
       >
         <img
-          src="assets/Fermaglo_Image04.svg"
+          src="assets/Fermaglo_Image04(Filled).svg"
           alt=""
           aria-hidden="true"
           style={{

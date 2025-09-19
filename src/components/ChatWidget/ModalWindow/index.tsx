@@ -176,7 +176,7 @@ function ModalWindow(props: ModalWindowProps) {
         {
           method: "POST",
           headers: {
-            Authorization: "Bearer key_3b3cfc3d7881e2a6711bbece13d1",
+            Authorization: "Bearer key_35cff8f30bf8bb98d31b4f11a199",
             "Content-Type": "application/json",
           },
 
@@ -204,9 +204,9 @@ function ModalWindow(props: ModalWindowProps) {
         fetch("https://theconnexus.ai/retell/widgetCalls", {
           method: "POST",
           headers: {
-            Authorization: "Bearer key_3b3cfc3d7881e2a6711bbece13d1",
+            Authorization: "Bearer key_35cff8f30bf8bb98d31b4f11a199",
             "Content-Type": "application/json",
-            "x-retell-signature": "key_3b3cfc3d7881e2a6711bbece13d1",
+            "x-retell-signature": "key_35cff8f30bf8bb98d31b4f11a199",
           },
 
           body: JSON.stringify({
